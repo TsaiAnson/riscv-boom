@@ -18,14 +18,14 @@ class Lab3BrPredictor(
   require (coreInstBytes == 4)
   require (fetch_width == 1)
 
-  // Table of 10-bit counters (init to 0) for Local History
+  // Table of 9-bit counters (init to 0) for Local History
   val localHT = Reg(
-    init = Vec(Seq.fill(1024) {UInt("b00", width = 4)})
+    init = Vec(Seq.fill(1024) {UInt("b00", width = 9)})
   )
 
   // Table of 3-bit counters (init to 0) for Local Prediction
   val localPred = Reg(
-    init = Vec(Seq.fill(16) {UInt("b00", width = 3)})
+    init = Vec(Seq.fill(512) {UInt("b00", width = 3)})
   )
 
   // Table of 2-bit counters (init to 0) for Global Prediction
@@ -59,12 +59,12 @@ class Lab3BrPredictor(
   io.resp.valid := !this.disable_bpd
   val s1_choice_pred = choicePred(globalPH)
   io.resp.bits.takens := Mux(s1_choice_pred(1), s1_global_pred(1), s1_local_pred(2))
-  val info_vec = Vec.fill(3) {UInt("b00", width = 4)}
+  val info_vec = Vec.fill(3) {UInt("b00", width = 9)}
   io.resp.bits.info := RegNext(info_vec.asUInt())
 
   // On commit, check to see if branch was actually taken and update state
   val s1_commit_en = this.commit.valid
-  val commit_vec = Vec(3, UInt(4.W)).fromBits(this.commit.bits.info.info)
+  val commit_vec = Vec(3, UInt(9.W)).fromBits(this.commit.bits.info.info)
   val s1_commit_idx = Wire(commit_vec(0))
   val s1_commit_lh = Wire(commit_vec(1))
   val s1_commit_gh = Wire(commit_vec(2))
